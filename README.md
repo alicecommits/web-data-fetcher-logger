@@ -169,8 +169,7 @@ style EH6 fill:#C67,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 
 ```
 
 ## **Graphing logged data**
-An example of (dummy) intermediary static result possible to exploit at that stage - **without the need for a client/server structure just yet** - is available in the **data-analysis-with-dash repo** **#TODO link**. The data in that repo is purely dummy, generated with random data generators - scripts of which are available in the repo as well, used for demo purposes only.
-
+An example of (dummy) intermediary static result possible to exploit at that stage - **without the need for a client/server structure just yet** - is available in the **dash-template repo** I've created: https://github.com/alicecommits/dash-template. The data in that repo is purely dummy, generated with random data generators - scripts of which are available in the repo as well, used for demo purposes only. [5]: 
 
 ## **TODOs**
 - manage node modules --> git ignored for now

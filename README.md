@@ -1,6 +1,5 @@
 # **Alice's REST API monitor**
 ## **Outline**
-***
 customizable monitor to track the activity of a REST API
 - based at a URL https://some-domain.com/api
 - requiring periodical (re-)authentication, using an API key  
@@ -9,7 +8,6 @@ customizable monitor to track the activity of a REST API
 
 
 ## **Stack used**
-***
 - Base language: JavaScript (ES6 syntax)
 - [**axios**][1]: promise-based HTTP Client for node.js and the browser, supported at the time of first push to this repo (early 2023)
 - [**node:readline/promises** + **node:readline/process**][2]: Node.js package to create an interface in the CLI. Used to prompt the user API authentication credentials in this project. Supported in early 2023.
@@ -22,7 +20,6 @@ customizable monitor to track the activity of a REST API
 [4]: https://github.com/louischatriot/nedb "NedB github"
 
 ## **How to use**
-***
 ### Conventions used in the documentation:
 In what follows we will use the following:
  - *dummyReq(uest)* : refers to the request chosen by the user, after authentication request has been completed successfully (if any needed). A generic example of a `GET/Dummy` request is taken for the code demo.
@@ -84,7 +81,6 @@ In what follows we will use the following:
   - If your API works differently, adjust const names/prompt instructions displayed in the CLI.
 
 ## **Motivations + Rationales**
-***
 ### **Cycling strategy**
 Going for a monitor cycling schema of the type: authentication request --> "dummy" request 1, dummy request 2, ..., dummy request n was motivated by the following needs and considerations:
 - In case the data of interest (e.g. a simple response.status == 200 OK) can be fetched by merely "pinging" the API, using another type of request than the authentication requests themselves allows to limit the frequency at which new tokens are generated.
@@ -173,13 +169,11 @@ style EH6 fill:#C67,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 
 ```
 
 ## **Graphing logged data**
-***
 An example of (dummy) intermediary static result possible to exploit at that stage - **without the need for a client/server structure just yet** - is available in the **data-analysis-with-dash repo** **#TODO link**. The data in that repo is purely dummy, generated with random data generators - scripts of which are available in the repo as well, used for demo purposes only.
 
 
 ## **TODOs**
-***
-- manage node modules
+- manage node modules --> git ignored for now
 - test invalid credentials feature
 - try the "module pattern" from MDN doc on IIFE
 - password hiding feature in `enterCredentials`

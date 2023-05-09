@@ -7,7 +7,7 @@ import { MyAPI,
 	enterCredentialsOrTimeoutAfter } from "./apiUtils.mjs";
 	
 // Setting up the nedb database
-const database = new Datastore('myTrackedData.db'); //replace with whatever name.db
+const database = new Datastore('ArenaRemainingCallsMay23.db'); //replace with whatever name.db
 database.loadDatabase();
 
 // wrapping setTimeout in a promise 
@@ -25,8 +25,8 @@ const DEBUG_TIMING = false; //for timing-related debug
 // API properties // e.g. --------------------------------------------------------
 
 // API general access
-const API_URL = "url_here"; // https://some-domain.com/api
-const API_ENV = "some_environment"; // environment/world/community id...
+const API_URL = "https://api.arenasolutions.com/v1";
+const API_ENV = "897380659"; // FAEL's Arena prod environment workspace ID
 
 // API resource handling
 let API_CURRENT_RESOURCE = 10000000; // init with arbitrary number >= max resource
@@ -34,7 +34,7 @@ const MIN_RESOURCE_THRESH = 1000; // reaching e.g. 1000 calls left, stop monitor
 
 // Request settings > which request are we sending? // GET/someDummyResource
 const HTTP_METHOD = 'get';
-const RESOURCE_TO_FETCH = '/resource?attribute1=value1&...&attributen=valuen';
+const RESOURCE_TO_FETCH = '/items?number=FFFA001354'; //dummy resource (unreleased A/W)
 const DEFAULT_HEADERS = {'Content-Type': "application/json"};
 // Request settings > timeouts (ms)
 const LOGIN_REQUEST_TIMEOUT = 20*1000;
@@ -42,8 +42,8 @@ const DUMMY_REQUEST_TIMEOUT = 10*1000;
 
 // Response settings: which fields are we interested in?
 const FIELD1_TO_MONITOR = 'date'; //e.g. date
-const FIELD2_TO_MONITOR = 'some_field_name'; //e.g. the qty of something
-const RESOURCE_KEY = 'some_field_showing_resource' //e.g. the API rate
+const FIELD2_TO_MONITOR = 'x-arena-requests-remaining'; //header of interest for calls
+const RESOURCE_KEY = 'remaining_calls'
 
 // Monitor time settings (ms) = arbitary values ----------------------------------
 
@@ -51,14 +51,14 @@ const RESOURCE_KEY = 'some_field_showing_resource' //e.g. the API rate
 const USER_CREDENTIALS_TIMEOUT = 30*1000; 
 
 // Monitor cycling
-const DT_FIRST_REQ = 1*60*1000; // dt (auth resp --> 1st non-login req) 
-const DT_DUMMY_REQ = 1*60*1000; // dt (nth non-login resp --> (n+1)th non-login req)
+const DT_FIRST_REQ = 10*60*1000; // dt (auth resp --> 1st non-login req) 
+const DT_DUMMY_REQ = 10*60*1000; // dt (nth non-login resp --> (n+1)th non-login req)
 // dt(nth cycle: (auth + [req,...,req]) --> (n+1)th cycle: (auth + [req,...,req]))
 // /!\ Recommendation before setting dtAuthCycle /!\
 // /!\ read "Monitor cycling" section of the READme /!\
-const DT_AUTH_CYCLE = 3.5*60*1000; 
+const DT_AUTH_CYCLE = 85*60*1000; 
 // will clear setIntervalAsync after this monitoring session duration
-const DT_MONITOR_SESS_AFT_FIRST_RUN = 12*60*1000; //e.g. 8am-11pm: 15*60*60*1000
+const DT_MONITOR_SESS_AFT_FIRST_RUN = 16*60*60*1000; //e.g. 8am-11pm: 15*60*60*1000
 // ----------------------END OF MONITOR SETTINGS ---------------------------------
 
 
@@ -92,17 +92,16 @@ async function mainSequence() {
 			DEFAULT_HEADERS,
 			LOGIN_REQUEST_TIMEOUT,
 			{ 
-				credentialFieldName1: GLOBAL_UN, //replace with your data
-				credentialFieldName2: GLOBAL_PW, //replace with your data
-				//any other field(s) needed, for example
-				someEnvName: API_ENV, //replace with your data
+				email: GLOBAL_UN,
+				password: GLOBAL_PW,
+				workspaceId: API_ENV,
 			});
 		
 		//TODO: testing credentials invalidation at that stage
 		if (loginResponse.status != 200) {
 			throw new Error("invalid credentials - try again");
 		}	
-		api.token = loginResponse.path.to.token.field; //replace with your data
+		api.token = loginResponse.data.arenaSessionId;
 
 		// ------------------- 2) LOGIN SUCCESSFUL => TOP ------------------------------
 		
@@ -122,12 +121,12 @@ async function mainSequence() {
 		console.log(loginResponseH);
 
 		// DATA --> DATASTORE
-		// Example of data to monitor at login, from the headers
+		// data to monitor at login, from the headers
 		const monitoredLoginData = {
 			'request_type' : 'POST/Login',
-			'response_date' : loginResponseH[FIELD1_TO_MONITOR], // replace with your data
-			'some_qty_field' : loginResponseH[FIELD2_TO_MONITOR] // replace with your data
-		}; 
+			'response_date' : loginResponseH[FIELD1_TO_MONITOR],
+			'remaining_calls' : loginResponseH[FIELD2_TO_MONITOR]
+		};
 		database.insert(monitoredLoginData);
 		if (DEBUG_DB) {
 			console.log(`DB AT LOGIN DATA LOGGING: ${database}`);
@@ -135,7 +134,7 @@ async function mainSequence() {
 		
 		// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// If not enough resources, return to avoid 429 too many requests
-		API_CURRENT_RESOURCE = RESOURCE_KEY['some_value']; // replace with your data
+		API_CURRENT_RESOURCE = monitoredLoginData['remaining_calls'];
 		if (DEBUG_RESOURCE) {
 			console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_CURRENT_RESOURCE}`);
 		}
@@ -164,7 +163,7 @@ async function mainSequence() {
 				HTTP_METHOD,
 				RESOURCE_TO_FETCH,
 				{
-					tokenName: api.token // replace with your data
+					arena_session_id: api.token
 				},
 				DUMMY_REQUEST_TIMEOUT);
 			
@@ -177,8 +176,8 @@ async function mainSequence() {
 				// Example of data to monitor at dummy request
 				const monitoredDummyData = {
 					'request_type' : 'GET/Dummy',
-					'response_date' : dummyResponseH[FIELD1_TO_MONITOR], // replace with your data
-					'some_qty_field' : dummyResponseH[FIELD2_TO_MONITOR] // replace with your data
+					'response_date' : dummyResponseH[FIELD1_TO_MONITOR],
+					'remaining_calls' : dummyResponseH[FIELD2_TO_MONITOR]
 				};
 				database.insert(monitoredDummyData);
 				if (DEBUG_DB) {
@@ -188,7 +187,7 @@ async function mainSequence() {
 
 				// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// If not enough resources, break to avoid 429 too many requests
-				API_CURRENT_RESOURCE = RESOURCE_KEY['some_value']; // replace with your data
+				API_CURRENT_RESOURCE = monitoredDummyData['remaining_calls'];
 				if (DEBUG_RESOURCE) {
 					console.log(`
 					LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_CURRENT_RESOURCE}`);

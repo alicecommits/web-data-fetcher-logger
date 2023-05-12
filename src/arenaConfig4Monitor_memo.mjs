@@ -13,7 +13,7 @@ const API_ENV = "897380659"; // environment/world/community id...
 
 // API resource handling
 let API_CURRENT_RESOURCE = 10000000; // init with arbitrary number >= max resource
-const MIN_RESOURCE_THRESH = 1000; // reaching e.g. 1000 calls left, stop monitor
+const MIN_RESOURCE_THRESH = 0; // reaching e.g. 1000 calls left, stop monitor
 
 // Request settings > which request are we sending? // GET/someDummyResource
 const HTTP_METHOD = 'get';

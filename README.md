@@ -10,11 +10,11 @@ customizable monitor to track the activity of a REST API
 - Allowed to log data points, used to draw consumption trend graphs such as below:
 <p align="center">
 <img
-  src="Arena_API_consumption_profile_with_markers_Feb23.png" width="300" alignSelf="center">
+  src="Arena_API_consumption_profile_with_markers_Feb23.PNG" width="300" alignSelf="center">
  </p>
 <p align="center">
 <img
-  src="Arena_API_consumption_trend_with_just_lines_Feb23.png" width="300" alignSelf="center">
+  src="Arena_API_consumption_trend_with_just_lines_Feb23.PNG" width="300" alignSelf="center">
 </p>
 
 

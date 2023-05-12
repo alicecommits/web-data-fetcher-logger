@@ -6,6 +6,13 @@ customizable monitor to track the activity of a REST API
 *this part can be adjusted or removed, depending on your API requiring (or not) authentication*
 - logging the content of response status/data/headers, at **repeated regular time intervals**!
 
+- Tried in practice with PTC Arena API (FAEL's PLM system used by Production Engineering)
+- Allowed to log data points, used to draw consumption trend graphs such as below:
+<p align="center">
+<img
+  src="TODO.png" width="300" alignSelf="center">
+ </p>
+
 
 ## **Stack used**
 - Base language: JavaScript (ES6 syntax)

@@ -1,4 +1,4 @@
-# **Alice's REST API monitor**
+# **Arena REST API monitor**
 ## **Outline**
 customizable monitor to track the activity of a REST API
 - based at a URL https://some-domain.com/api

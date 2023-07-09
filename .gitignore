@@ -1,4 +1,5 @@
+myTrackedData.db
+
 # dependencies
 /node_modules
 .env
-myTrackedData.db

@@ -2,16 +2,17 @@
 import { setIntervalAsync, 
 	clearIntervalAsync } from 'set-interval-async';
 import Datastore from "nedb";
-
+import 'dotenv/config'; //syntax according to dotenv doc
+import 'dotenv-expand/config'
+//dotenv.config();
 import { MyAPI, 
 	enterCredentialsOrTimeoutAfter } from "./apiUtils.mjs";
-	
+
 // Setting up the nedb database
 const database = new Datastore('myTrackedData.db'); //replace with whatever name.db
 database.loadDatabase();
 
-// wrapping setTimeout in a promise 
-// to use for time gaps in the monitor sequence
+// wrapping setTimeout in a promise to generate time gaps in the monitor sequence
 function sleep(ms) {
 	return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -20,58 +21,46 @@ function sleep(ms) {
 const DEBUG_DB = false; // for database-related debug
 const DEBUG_RESOURCE = false; // for API resource-related debug
 const DEBUG_TIMING = false; //for timing-related debug
+//console.log(process.env); // to double-check env variables
 
 // ------------------------- MONITOR SETTINGS ------------------------------------
-// API properties // e.g. --------------------------------------------------------
-
-// API general access
-const API_URL = "url_here"; // https://some-domain.com/api
-const API_ENV = "some_environment"; // environment/world/community id...
-
-// API resource handling
-let API_CURRENT_RESOURCE = 10000000; // init with arbitrary number >= max resource
-const MIN_RESOURCE_THRESH = 1000; // reaching e.g. 1000 calls left, stop monitor
-
-// Request settings > which request are we sending? // GET/someDummyResource
-const HTTP_METHOD = 'get';
-const RESOURCE_TO_FETCH = '/resource?attribute1=value1&...&attributen=valuen';
-const DEFAULT_HEADERS = {'Content-Type': "application/json"};
-// Request settings > timeouts (ms)
-const LOGIN_REQUEST_TIMEOUT = 20*1000;
-const DUMMY_REQUEST_TIMEOUT = 10*1000;
-
-// Response settings: which fields are we interested in?
-const FIELD1_TO_MONITOR = 'date'; //e.g. date
-const FIELD2_TO_MONITOR = 'some_field_name'; //e.g. the qty of something
-const RESOURCE_KEY = 'some_field_showing_resource' //e.g. the API rate
-
-// Monitor time settings (ms) = arbitary values ----------------------------------
-
-// timeout if user remains inactive at prompt
-const USER_CREDENTIALS_TIMEOUT = 30*1000; 
-
-// Monitor cycling
-const DT_FIRST_REQ = 1*60*1000; // dt (auth resp --> 1st non-login req) 
-const DT_DUMMY_REQ = 1*60*1000; // dt (nth non-login resp --> (n+1)th non-login req)
-// dt(nth cycle: (auth + [req,...,req]) --> (n+1)th cycle: (auth + [req,...,req]))
-// /!\ Recommendation before setting dtAuthCycle /!\
-// /!\ read "Monitor cycling" section of the READme /!\
-const DT_AUTH_CYCLE = 3.5*60*1000; 
-// will clear setIntervalAsync after this monitoring session duration
-const DT_MONITOR_SESS_AFT_FIRST_RUN = 12*60*1000; //e.g. 8am-11pm: 15*60*60*1000
+// API general settings
+const API_URL = process.env.API_URL;
+//const API_ENV = process.env.API_ENV;
+//const RESOURCE_KEY = process.env.RESOURCE_KEY;
+let API_RESOURCE = parseInt(process.env.API_RESOURCE);
+const MIN_RESOURCE_THRESH = parseInt(process.env.MIN_RESOURCE_THRESH);
+// Request settings
+const LOGIN_ENDPOINT = process.env.LOGIN_ENDPOINT;
+const EXTRA_LOGIN_FIELDS = JSON.parse(process.env.EXTRA_LOGIN_OBJ);
+const PATH_TO_TOKEN = process.env.PATH_TO_TOKEN;
+const TOKEN_FIELD = process.env.TOKEN_FIELD;
+const TOKEN_FIELD_ALT = process.env.TOKEN_FIELD_ALT;
+const HTTP_METHOD = process.env.HTTP_METHOD;
+const RESOURCE_TO_FETCH = process.env.RESOURCE_TO_FETCH;
+const DEFAULT_HEADERS = JSON.parse(process.env.DEFAULT_HEADERS);
+const LOGIN_REQUEST_TIMEOUT = process.env.LOGIN_REQUEST_TIMEOUT;
+const DUMMY_REQUEST_TIMEOUT = process.env.DUMMY_REQUEST_TIMEOUT;
+// Response settings - which fields are we interested in monitoring?
+const FIELD1_TO_MONITOR = process.env.FIELD1_TO_MONITOR;
+const FIELD2_TO_MONITOR = process.env.FIELD2_TO_MONITOR;
+// Timing settings
+const USER_CRED_TIMEOUT = parseInt(process.env.USER_CRED_TIMEOUT);
+const DT_FIRST_REQ = parseInt(process.env.DT_FIRST_REQ);
+const DT_DUMMY_REQ = parseInt(process.env.DT_DUMMY_REQ);
+const DT_AUTH_CYCLE = parseInt(process.env.DT_AUTH_CYCLE); 
+const DT_SESS_AFT_FIRST_RUN = parseInt(process.env.DT_MONITOR_SESS_AFT_FIRST_RUN);
 // ----------------------END OF MONITOR SETTINGS ---------------------------------
 
-
-
-
-// init un / pw globally - TODO: Try the module pattern from MDN doc on IIFE
+// init un / pw globally (TODO other pattern)
 let GLOBAL_UN = '';
 let GLOBAL_PW = '';
+
 // ------------------------------------ MAIN SEQUENCE DEF ----------------------------------------
 async function mainSequence() {
 	// if enterCredentials never called, use the data returned from prompt
 	// else, keep using global stored un/pw - to remove if API needs no auth
-	const cred = await enterCredentialsOrTimeoutAfter(USER_CREDENTIALS_TIMEOUT);
+	const cred = await enterCredentialsOrTimeoutAfter(USER_CRED_TIMEOUT);
 	if (cred!=="credentials already set") {
 		GLOBAL_UN = cred.username,
 		GLOBAL_PW = cred.password
@@ -86,23 +75,25 @@ async function mainSequence() {
 		const api = new MyAPI();
 		api.URL = API_URL
 
+		// staged prep login req body in an object, then merge with EXTRA_LOGIN_FIELDS
+		const loginCred = {
+			email: GLOBAL_UN,
+			password: GLOBAL_PW,
+		};
+		const loginBody = Object.assign(loginCred, EXTRA_LOGIN_FIELDS);
+		//console.log("loginBody merged: ", loginBody);
+
 		const loginResponse = await api.performRequest(
 			'post', 
-			'/login', 
+			LOGIN_ENDPOINT, 
 			DEFAULT_HEADERS,
 			LOGIN_REQUEST_TIMEOUT,
-			{ 
-				credentialFieldName1: GLOBAL_UN, //replace with your data
-				credentialFieldName2: GLOBAL_PW, //replace with your data
-				//any other field(s) needed, for example
-				someEnvName: API_ENV, //replace with your data
-			});
+			loginBody);
 		
-		//TODO: testing credentials invalidation at that stage
 		if (loginResponse.status != 200) {
 			throw new Error("invalid credentials - try again");
-		}	
-		api.token = loginResponse.path.to.token.field; //replace with your data
+		}
+		api.token = loginResponse[PATH_TO_TOKEN][TOKEN_FIELD_ALT]; //to improve
 
 		// ------------------- 2) LOGIN SUCCESSFUL => TOP ------------------------------
 		
@@ -124,9 +115,9 @@ async function mainSequence() {
 		// DATA --> DATASTORE
 		// Example of data to monitor at login, from the headers
 		const monitoredLoginData = {
-			'request_type' : 'POST/Login',
+			'request_type' : 'AUTH',
 			'response_date' : loginResponseH[FIELD1_TO_MONITOR], // replace with your data
-			'some_qty_field' : loginResponseH[FIELD2_TO_MONITOR] // replace with your data
+			'resource_to_monitor' : loginResponseH[FIELD2_TO_MONITOR] // replace with your data
 		}; 
 		database.insert(monitoredLoginData);
 		if (DEBUG_DB) {
@@ -135,11 +126,11 @@ async function mainSequence() {
 		
 		// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// If not enough resources, return to avoid 429 too many requests
-		API_CURRENT_RESOURCE = RESOURCE_KEY['some_value']; // replace with your data
+		API_RESOURCE = monitoredLoginData['resource_to_monitor']; // replace with your data
 		if (DEBUG_RESOURCE) {
-			console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_CURRENT_RESOURCE}`);
+			console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_RESOURCE}`);
 		}
-		if (parseInt(API_CURRENT_RESOURCE) < MIN_RESOURCE_THRESH) {
+		if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
 			console.log(`
 			Can't perform any post-login request ` + 
 			`- Not enough API resources to run the monitor ` +
@@ -160,12 +151,16 @@ async function mainSequence() {
 
 		// 2. perform the request as long as token is valid
 		innerloop: while (tsWhile <= nextExpiration) {
+			//staged prep dummy req headers in an object
+			let dummyReqHeaders = {
+				headers: DEFAULT_HEADERS,
+			};
+			dummyReqHeaders[TOKEN_FIELD] = api.token;
+
 			const dummyResponse = await api.performRequest(
 				HTTP_METHOD,
 				RESOURCE_TO_FETCH,
-				{
-					tokenName: api.token // replace with your data
-				},
+				dummyReqHeaders,
 				DUMMY_REQUEST_TIMEOUT);
 			
 			// if performRequest did not resolve, .headers will break, hence the if
@@ -175,10 +170,11 @@ async function mainSequence() {
 
 				// DATA --> DATASTORE
 				// Example of data to monitor at dummy request
+				// to improve
 				const monitoredDummyData = {
 					'request_type' : 'GET/Dummy',
 					'response_date' : dummyResponseH[FIELD1_TO_MONITOR], // replace with your data
-					'some_qty_field' : dummyResponseH[FIELD2_TO_MONITOR] // replace with your data
+					'resource_to_monitor' : dummyResponseH[FIELD2_TO_MONITOR] // replace with your data
 				};
 				database.insert(monitoredDummyData);
 				if (DEBUG_DB) {
@@ -188,12 +184,12 @@ async function mainSequence() {
 
 				// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// If not enough resources, break to avoid 429 too many requests
-				API_CURRENT_RESOURCE = RESOURCE_KEY['some_value']; // replace with your data
+				API_RESOURCE = monitoredDummyData['resource_to_monitor']; // replace with your data
 				if (DEBUG_RESOURCE) {
 					console.log(`
-					LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_CURRENT_RESOURCE}`);
+					LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_RESOURCE}`);
 				}
-				if (parseInt(API_CURRENT_RESOURCE) < MIN_RESOURCE_THRESH) {
+				if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
 					console.log(`
 					Can't perform any more (non-login) dummy requests ` + 
 					`- Not enough API resources to run the monitor ` +
@@ -231,7 +227,7 @@ async function mainSequence() {
 // If better design patterns/practices to perform the below, contributing is welcome!
 
 async function callOrStopMainSequence() {
-	if (parseInt(API_CURRENT_RESOURCE) < MIN_RESOURCE_THRESH) {
+	if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
 		throw new Error(`
 		!!!! Can't run mainSequence anymore due to `+
 		`not enough API resources available `+`
@@ -275,7 +271,7 @@ async function callOrStopMainSequence() {
 			`- clearing myIntervalAsync after last execution cycle ` + 
 			`is complete. xxxxxxxxxxxxxxx`);
 			clearIntervalAsync(myIntervalAsync);
-		}, DT_MONITOR_SESS_AFT_FIRST_RUN);
+		}, DT_SESS_AFT_FIRST_RUN);
 	
 
 	// CASE B: returned from 1st call... but without false bool or string ---------

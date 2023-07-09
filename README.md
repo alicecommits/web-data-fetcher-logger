@@ -1,8 +1,11 @@
-# **Alice's REST API monitor**
+# **Arena REST API monitor**
 ## **Outline**
 customizable monitor to track the activity of a REST API
-- based at a URL https://some-domain.com/api
+- based at https://api.arenasolutions.com/v1
 - requiring periodical (re-)authentication, using an API key  
+
+<details>
+  <summary>Original READme (very detailed)</summary>
 *this part can be adjusted or removed, depending on your API requiring (or not) authentication*
 - logging the content of response status/data/headers, at **repeated regular time intervals**!
 
@@ -167,7 +170,7 @@ style EH6 fill:#C67,stroke:#f66,stroke-width:2px,color:#fff,stroke-dasharray: 5 
     H-. async interval every DT_AUTH_CYCLE .-> id0
 
 ```
-
+  
 ## **Graphing logged data**
 An example of (dummy) intermediary static result possible to exploit at that stage - **without the need for a client/server structure just yet** - is available in the **dash-template repo** I've created: https://github.com/alicecommits/dash-template. The data in that repo is purely dummy, generated with random data generators - scripts of which are available in the repo as well, used for demo purposes only. [5]: 
 
@@ -182,3 +185,21 @@ An example of (dummy) intermediary static result possible to exploit at that sta
   - neDB database querying
   - Plot refreshing in the browser
   - JS-based interactive plotting, in the browser
+ 
+</details>
+  
+- logging the content of response headers, at **repeated regular time intervals**!
+
+  
+- Tried in practice at FAEL - used by Production Engineering
+- Allowed to log data points, used to draw consumption trend graphs such as below:
+<p align="center">
+<img
+  src="Arena_API_consumption_profile_with_markers_Feb23.PNG" width="300" alignSelf="center">
+ </p>
+<p align="center">
+<img
+  src="Arena_API_consumption_trend_with_just_lines_Feb23.PNG" width="300" alignSelf="center">
+</p>
+
+To get details on how to use - Original repo README for the generic tool: https://github.com/alicecommits/alices-rest-api-monitor/blob/main/README.md

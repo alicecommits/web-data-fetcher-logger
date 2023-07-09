@@ -9,7 +9,7 @@ import { MyAPI,
 	enterCredentialsOrTimeoutAfter } from "./apiUtils.mjs";
 
 // Setting up the nedb database
-const database = new Datastore('myTrackedData.db'); //replace with whatever name.db
+const database = new Datastore('someDB.db'); //rename for your own use case
 database.loadDatabase();
 
 // wrapping setTimeout in a promise to generate time gaps in the monitor sequence
@@ -50,6 +50,7 @@ const DT_FIRST_REQ = parseInt(process.env.DT_FIRST_REQ);
 const DT_DUMMY_REQ = parseInt(process.env.DT_DUMMY_REQ);
 const DT_AUTH_CYCLE = parseInt(process.env.DT_AUTH_CYCLE); 
 const DT_SESS_AFT_FIRST_RUN = parseInt(process.env.DT_MONITOR_SESS_AFT_FIRST_RUN);
+
 // ----------------------END OF MONITOR SETTINGS ---------------------------------
 
 // init un / pw globally (TODO other pattern)
@@ -113,12 +114,13 @@ async function mainSequence() {
 		console.log(loginResponseH);
 
 		// DATA --> DATASTORE
-		// Example of data to monitor at login, from the headers
+		// data to monitor at login, from the headers
 		const monitoredLoginData = {
 			'request_type' : 'AUTH',
 			'response_date' : loginResponseH[FIELD1_TO_MONITOR], // replace with your data
 			'resource_to_monitor' : loginResponseH[FIELD2_TO_MONITOR] // replace with your data
-		}; 
+		};
+
 		database.insert(monitoredLoginData);
 		if (DEBUG_DB) {
 			console.log(`DB AT LOGIN DATA LOGGING: ${database}`);
@@ -126,7 +128,9 @@ async function mainSequence() {
 		
 		// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// If not enough resources, return to avoid 429 too many requests
+
 		API_RESOURCE = monitoredLoginData['resource_to_monitor']; // replace with your data
+
 		if (DEBUG_RESOURCE) {
 			console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_RESOURCE}`);
 		}
@@ -185,6 +189,7 @@ async function mainSequence() {
 				// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// If not enough resources, break to avoid 429 too many requests
 				API_RESOURCE = monitoredDummyData['resource_to_monitor']; // replace with your data
+
 				if (DEBUG_RESOURCE) {
 					console.log(`
 					LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_RESOURCE}`);

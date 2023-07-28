@@ -190,19 +190,14 @@ If you wish to contribute to them, feel free to do so!
   - In this case, the `try/catch` structure of `performRequest` in `apiUtils.mjs` applies and so `429 Too Many Requests` is caught as an `AxiosError` exception. A quick correction would be to handle `429 Too Many Requests` so that monitor aborts and totally quits.  
 
 - **#TODO Handling `401 Unauthorized`**: Need to implement retry strategy
-
-If you want, 
-
-
-- "unhandle" `429 Too Many Requests`, rather than catching it, throwing/returning it, and "escalating" the return behaviour to totally quit monitor execution (see May 23 update in **Exception / Error handling** section above)
 - manage node modules --> git ignored for now
-- TDD: Write tests notably for:
-  - valid/invalid credentials feature
-  - *TBA*
 - try the "module pattern" from MDN doc on IIFE
 - password hiding feature in `enterCredentials`
 
 Mid/Long-term, will happen incrementally:
+- TDD: Write tests notably for:
+  - valid/invalid credentials feature
+  - *TBA*
 - migrate to a server/client structure to evolve towards a **live monitor + auto-refresh of data logging/graphs**, notably handling the following:
   - CORS
   - database querying

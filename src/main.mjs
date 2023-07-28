@@ -67,7 +67,7 @@ async function mainSequence() {
 		GLOBAL_PW = cred.password
 	}
 	
-	outerloop: try {
+	try {
 		// -------------------------------- 1) LOGIN --------------------------------------
 		// Drop the 1) + 2) sections if sending requests to your API does not require auth
 		// or adjust 1) section to fit how auth works with your API
@@ -154,7 +154,7 @@ async function mainSequence() {
 		let tsWhile = Date.now();
 
 		// 2. perform the request as long as token is valid
-		innerloop: while (tsWhile <= nextExpiration) {
+		while (tsWhile <= nextExpiration) {
 			//staged prep dummy req headers in an object
 			let dummyReqHeaders = {
 				headers: DEFAULT_HEADERS,

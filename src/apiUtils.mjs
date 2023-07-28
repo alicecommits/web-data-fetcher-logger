@@ -27,8 +27,8 @@ export class MyAPI
 			` ) emitted at: ${new Date(tsRequest)}`);
 
 			const response = await axios({
-				method: httpVerb, //if not specified, axios default is 'get'
-				url: endpoint, // '/login' is a particular endpoint
+				method: httpVerb, //if unspecified, axios default is 'get'
+				url: endpoint,
 				baseURL: this.URL,
 				headers: customHeaders,
 				data: someData, 

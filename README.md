@@ -1,13 +1,12 @@
 # **Alice's REST API monitor**
 ## **Outline**
 customizable monitor to track the activity of a REST API
-- requiring periodical (re-)authentication, using an API key
-
-Original READme (very detailed)
-*this part can be adjusted or removed, depending on your API requiring (or not) authentication*
+- requiring periodical (re-)authentication, using an API key - *this part can be adjusted or removed, depending on your API requiring (or not) authentication*
 - logging the content of response status/data/headers, at **repeated regular time intervals**!
 
-## **Stack used**
+- to read about active TODOs --> [here](#todos)
+
+## **Stack (#evolving atm)**
 - Base language: JavaScript (ES6 syntax)
 - [**axios**][1]: promise-based HTTP Client for node.js and the browser, supported at the time of first push to this repo (early 2023)
 - [**node:readline/promises** + **node:readline/process**][2]: Node.js package to create an interface in the CLI. Used to prompt the user API authentication credentials in this project. Supported in early 2023.
@@ -185,23 +184,25 @@ You can choose to plot the data using an in-memory database, or having a databas
 ## **TODOs**
 
 If you wish to contribute to them, feel free to do so!
-- **#TODO Handling `429 Too Many Requests`** - see TODO
+- [ ] **#TODO Handling `429 Too Many Requests`** - see TODO
   - Sometimes, API rate is high, resources decrease faster than expected, leading to `429 Too Many Requests` triggering BEFORE entering `API_CURRENT_RESOURCE < MIN_RESOURCE_THRESH` condition.   
   - In this case, the `try/catch` structure of `performRequest` in `apiUtils.mjs` applies and so `429 Too Many Requests` is caught as an `AxiosError` exception. A quick correction would be to handle `429 Too Many Requests` so that monitor aborts and totally quits.  
 
-- **#TODO Handling `401 Unauthorized`**: Need to implement retry strategy
-- manage node modules --> git ignored for now
-- try the "module pattern" from MDN doc on IIFE
-- password hiding feature in `enterCredentials`
+- [ ] **#TODO Handling `401 Unauthorized`**: Need to implement retry strategy
+- [ ] manage node modules ? they're git ignored for now
+- [ ] try the "module pattern" from MDN doc on IIFE
+- [ ] password hiding feature in `enterCredentials`
 
 Mid/Long-term, will happen incrementally:
-- TDD: Write tests notably for:
+- [ ] TDD: Write tests notably for:
   - valid/invalid credentials feature
   - *TBA*
-- migrate to a server/client structure to evolve towards a **live monitor + auto-refresh of data logging/graphs**, notably handling the following:
+- [ ] migrate to a server/client structure to evolve towards a **live monitor + auto-refresh of data logging/graphs**, notably handling the following:
   - CORS
   - database querying
   - Plot refreshing in the browser (real-time)
   - JS-based interactive plotting, in the browser  
 
-- migrate JS --> TypeScript
+- [ ] migrate JS --> TypeScript
+
+<p align="right">(<a href="#top">back to top</a>)</p>

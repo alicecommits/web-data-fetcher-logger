@@ -3,10 +3,11 @@ import { setIntervalAsync,
 	clearIntervalAsync } from 'set-interval-async';
 import Datastore from "nedb";
 import 'dotenv/config'; //syntax according to dotenv doc
-import 'dotenv-expand/config'
+import 'dotenv-expand/config';
+import { MyAPI } from "./apiUtil.mjs";
+import { enterCredentialsOrTimeoutAfter } from "./credUtil.mjs"
+
 //dotenv.config();
-import { MyAPI, 
-	enterCredentialsOrTimeoutAfter } from "./apiUtils.mjs";
 
 // Setting up the nedb database
 const database = new Datastore('someDB.db'); //rename for your own use case
@@ -32,7 +33,7 @@ let API_RESOURCE = parseInt(process.env.API_RESOURCE);
 const MIN_RESOURCE_THRESH = parseInt(process.env.MIN_RESOURCE_THRESH);
 // Request settings
 const LOGIN_ENDPOINT = process.env.LOGIN_ENDPOINT;
-const EXTRA_LOGIN_FIELDS = JSON.parse(process.env.EXTRA_LOGIN_OBJ);
+//const EXTRA_LOGIN_FIELDS = JSON.parse(process.env.EXTRA_LOGIN_FIELDS);
 const PATH_TO_TOKEN = process.env.PATH_TO_TOKEN;
 const TOKEN_FIELD = process.env.TOKEN_FIELD;
 const TOKEN_FIELD_ALT = process.env.TOKEN_FIELD_ALT;
@@ -42,6 +43,8 @@ const DEFAULT_HEADERS = JSON.parse(process.env.DEFAULT_HEADERS);
 const LOGIN_REQUEST_TIMEOUT = process.env.LOGIN_REQUEST_TIMEOUT;
 const DUMMY_REQUEST_TIMEOUT = process.env.DUMMY_REQUEST_TIMEOUT;
 // Response settings - which fields are we interested in monitoring?
+const FIELD1_TO_MONITOR_AT_LOGIN = process.env.FIELD1_TO_MONITOR_AT_LOGIN;
+const FIELD2_TO_MONITOR_AT_LOGIN = process.env.FIELD2_TO_MONITOR_AT_LOGIN;
 const FIELD1_TO_MONITOR = process.env.FIELD1_TO_MONITOR;
 const FIELD2_TO_MONITOR = process.env.FIELD2_TO_MONITOR;
 // Timing settings
@@ -78,10 +81,10 @@ async function mainSequence() {
 
 		// staged prep login req body in an object, then merge with EXTRA_LOGIN_FIELDS
 		const loginCred = {
-			email: GLOBAL_UN,
+			username: GLOBAL_UN,
 			password: GLOBAL_PW,
 		};
-		const loginBody = Object.assign(loginCred, EXTRA_LOGIN_FIELDS);
+		//const loginBody = Object.assign(loginCred, EXTRA_LOGIN_FIELDS);
 		//console.log("loginBody merged: ", loginBody);
 
 		const loginResponse = await api.performRequest(
@@ -89,12 +92,13 @@ async function mainSequence() {
 			LOGIN_ENDPOINT, 
 			DEFAULT_HEADERS,
 			LOGIN_REQUEST_TIMEOUT,
-			loginBody);
+			loginCred); //loginBody
 		
 		if (loginResponse.status != 200) {
 			throw new Error("invalid credentials - try again");
 		}
-		api.token = loginResponse[PATH_TO_TOKEN][TOKEN_FIELD_ALT]; //to improve
+		const loginResponseD = loginResponse.data;
+		api.token = loginResponseD[TOKEN_FIELD];
 
 		// ------------------- 2) LOGIN SUCCESSFUL => TOP ------------------------------
 		
@@ -109,31 +113,26 @@ async function mainSequence() {
 		+ `from ${dtTokenReadable} to ${nextExpirationReadable},` +
 		` for the next ${DT_AUTH_CYCLE/(1000*60)} min.`);
 		
-		// For example: monitoring headers at login
-		const loginResponseH = loginResponse.headers;
-		console.log(loginResponseH);
+		// For example: monitoring content in login headers (if any)
+		//const loginResponseH = loginResponse.headers;
+		console.log(`xxxxx mock login headers: ${loginResponse.headers}`);
+		console.log(`xxxxx mock login data: ${loginResponse.data}`);
 
-		// DATA --> DATASTORE
-		// data to monitor at login, from the headers
+		// DATA --> DATASTORE - random example of user data to record - replace with your own
 		const monitoredLoginData = {
 			'request_type' : 'AUTH',
-			'response_date' : loginResponseH[FIELD1_TO_MONITOR], // replace with your data
-			'resource_to_monitor' : loginResponseH[FIELD2_TO_MONITOR] // replace with your data
+			'response_date' : loginResponse.headers.date,
+			'userFirstName' : loginResponseD[FIELD1_TO_MONITOR_AT_LOGIN],
+			'userLastName' : loginResponseD[FIELD2_TO_MONITOR_AT_LOGIN]
 		};
-
 		database.insert(monitoredLoginData);
-		if (DEBUG_DB) {
-			console.log(`DB AT LOGIN DATA LOGGING: ${database}`);
-		}
 		
 		// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// If not enough resources, return to avoid 429 too many requests
+		// No API resource to check in the mock!
+		// API_RESOURCE = monitoredLoginData['resource_to_monitor'];
 
-		API_RESOURCE = monitoredLoginData['resource_to_monitor']; // replace with your data
-
-		if (DEBUG_RESOURCE) {
-			console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_RESOURCE}`);
-		}
+		if (DEBUG_RESOURCE) console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_RESOURCE}`);
 		if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
 			console.log(`
 			Can't perform any post-login request ` + 
@@ -156,9 +155,7 @@ async function mainSequence() {
 		// 2. perform the request as long as token is valid
 		while (tsWhile <= nextExpiration) {
 			//staged prep dummy req headers in an object
-			let dummyReqHeaders = {
-				headers: DEFAULT_HEADERS,
-			};
+			let dummyReqHeaders = { headers: DEFAULT_HEADERS };
 			dummyReqHeaders[TOKEN_FIELD] = api.token;
 
 			const dummyResponse = await api.performRequest(
@@ -166,34 +163,27 @@ async function mainSequence() {
 				RESOURCE_TO_FETCH,
 				dummyReqHeaders,
 				DUMMY_REQUEST_TIMEOUT);
-			
+			const dummyResponseD = dummyResponse.data;
+
 			// if performRequest did not resolve, .headers will break, hence the if
 			if (dummyResponse) {
-				const dummyResponseH = dummyResponse.headers;
-				console.log(dummyResponseH);
-
-				// DATA --> DATASTORE
-				// Example of data to monitor at dummy request
-				// to improve
+				console.log(`xxxxx mock dummy request headers: ${dummyResponse.headers}`);
+				console.log(`xxxxx mock dummy request data: ${dummyResponse.data}`);
+				// DATA --> DATASTORE - random example of data to record - replace with your own
 				const monitoredDummyData = {
 					'request_type' : 'GET/Dummy',
-					'response_date' : dummyResponseH[FIELD1_TO_MONITOR], // replace with your data
-					'resource_to_monitor' : dummyResponseH[FIELD2_TO_MONITOR] // replace with your data
+					'response_date': dummyResponse.headers.date,
+					'quote_id' : dummyResponseD[FIELD1_TO_MONITOR],
+					'quote' : dummyResponseD[FIELD2_TO_MONITOR]
 				};
 				database.insert(monitoredDummyData);
-				if (DEBUG_DB) {
-					console.log(`DB AT DUMMY DATA LOGGING: ${database}`);
-				}
 				
 
 				// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// If not enough resources, break to avoid 429 too many requests
-				API_RESOURCE = monitoredDummyData['resource_to_monitor']; // replace with your data
+				//API_RESOURCE = monitoredDummyData['resource_to_monitor'];
 
-				if (DEBUG_RESOURCE) {
-					console.log(`
-					LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_RESOURCE}`);
-				}
+				if (DEBUG_RESOURCE) console.log(`LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_RESOURCE}`);
 				if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
 					console.log(`
 					Can't perform any more (non-login) dummy requests ` + 

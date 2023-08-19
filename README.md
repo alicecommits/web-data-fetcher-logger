@@ -8,6 +8,8 @@ customizable monitor to track the activity of a REST API
 
 ## **Stack (#evolving atm)**
 - Base language: JavaScript (ES6 syntax)
+- Mock API used: https://dummyjson.com/
+  - Notably, for auth: https://dummyjson.com/docs/auth - mocking auth with *id #29 (Macy): *username*: jissetts, *password*: ePawWgrnZR8L*
 - [**axios**][1]: promise-based HTTP Client for node.js and the browser, supported at the time of first push to this repo (early 2023)
 - [**node:readline/promises** + **node:readline/process**][2]: Node.js package to create an interface in the CLI. Used to prompt the user API authentication credentials in this project. Supported in early 2023.
 - [**set-interval-async**][3]: Package aiming at replicating JavaScript's in-built `setInterval`, but optimized for a use with asynchronous functions, such as functions written to fetch data from a server.

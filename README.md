@@ -49,7 +49,7 @@ In what follows we will use the following:
     - *RESOURCE_KEY*: The field where to find the info on the resource limited by the user via the threshold *MIN_RESOURCE_THRESH*.
     - For more info on how to configure axios response objects, check the doc: https://axios-http.com/docs/res_schema 
   - **Monitor time settings (ms)** - *arbitrary values set in the script*
-    - *USER_CREDENTIALS_TIMEOUT*: in case API (re-)authentication is required, if the credentials take too long to be prompted or injected then the following error is thrown: `"user data not input or taking too long to process. Please re-log manually."`, making the monitor quit (see `enterCredentialsOrTimeoutAfter` in `apiUtils.mjs`).
+    - *USER_CREDENTIALS_TIMEOUT*: in case API (re-)authentication is required, if the credentials take too long to be prompted or injected then the following error is thrown: `"user data not input or taking too long to process. Please re-log manually."`, making the monitor quit (see `enterCredentialsOrTimeoutAfter` in `credUtil.mjs`).
     - **Monitor cycling settings**
       - *DT_FIRST_REQ*: duration between auth response and 1st non-login request
       - *DT_DUMMY_REQ*: duration between a non-login resp and the next non-login req trigger
@@ -65,13 +65,13 @@ In what follows we will use the following:
     *Note: DT_MONITOR_SESS_AFT_FIRST_RUN can be set shorter than DT_AUTH_CYCLE safely, but doing this does not present much interest.*
     - **For rationales behind this logics, read the Cycling strategy section below.**
 
-### **(If needed) In `apiUtils.mjs`, tweak the following**  
+### **(If needed) In `apiUtil.mjs`, tweak the following**  
   
 
 - **`performRequest`**: 
 
-  - `performRequest` is a wrapper function around axios request config. It also console logs the request HTTP METHOD/endpoint + timestamp at request emitting. **The intent in `apiUtils.mjs` is to be a template for a typical request configuration**.
-  - If the configuration is OK as is for you, then you just need to modify the http method/endpoint in your .env (see `example_dotenv.env`). If not, then in `apiUtils.mjs > performRequest`, restructure the object in `axios()` method.
+  - `performRequest` is a wrapper function around axios request config. It also console logs the request HTTP METHOD/endpoint + timestamp at request emitting. **The intent in `apiUtil.mjs` is to be a template for a typical request configuration**.
+  - If the configuration is OK as is for you, then you just need to modify the http method/endpoint in your .env (see `example_dotenv.env`). If not, then in `apiUtil.mjs > performRequest`, restructure the object in `axios()` method.
 
   - **Parameters you might wish to modify `performRequest` to be modified by the user of the monitor - see settings in the monitor settings of `main.mjs`**
 	 - `customHeaders`: headers to send to the API (see your REST API documentation if needed)
@@ -80,9 +80,9 @@ In what follows we will use the following:
 
 	*Note if you're unfamiliar with RESTful APIs: someData can only be NON empty for the following http methods (httpVerb):	'PUT', 'POST', 'DELETE', and 'PATCH'. 
 	If not specified, someData is sent as empty body to the REST API (e.g. for a 'GET')*
-- **Important**: If you're unfamiliar with http requests, before doing anything in `apiUtils.mjs`, it is recommended to check axios documentation for request configuration, notably regarding http methods, authentication, encoding, specific content type: https://axios-http.com/docs/req_config
+- **Important**: If you're unfamiliar with http requests, before doing anything in `apiUtil.mjs`, it is recommended to check axios documentation for request configuration, notably regarding http methods, authentication, encoding, specific content type: https://axios-http.com/docs/req_config
 - **`enterCredentials`**:  
-  - The example used in `apiUtils.mjs` is based on a typical situation where, to authenticate to the API, the user would likely need to enter a username/email + a password.
+  - The example used in `credUtil.mjs` is based on a typical situation where, to authenticate to the API, the user would likely need to enter a username/email + a password.
   - If your API works differently, adjust const names/prompt instructions to display.
 
 ## **Motivations + Rationales**
@@ -188,7 +188,7 @@ You can choose to plot the data using an in-memory database, or having a databas
 If you wish to contribute to them, feel free to do so!
 - [ ] **#TODO Handling `429 Too Many Requests`** - see TODO
   - Sometimes, API rate is high, resources decrease faster than expected, leading to `429 Too Many Requests` triggering BEFORE entering `API_CURRENT_RESOURCE < MIN_RESOURCE_THRESH` condition.   
-  - In this case, the `try/catch` structure of `performRequest` in `apiUtils.mjs` applies and so `429 Too Many Requests` is caught as an `AxiosError` exception. A quick correction would be to handle `429 Too Many Requests` so that monitor aborts and totally quits.  
+  - In this case, the `try/catch` structure of `performRequest` in `apiUtil.mjs` applies and so `429 Too Many Requests` is caught as an `AxiosError` exception. A quick correction would be to handle `429 Too Many Requests` so that monitor aborts and totally quits.  
 
 - [ ] **#TODO Handling `401 Unauthorized`**: Need to implement retry strategy
 - [ ] manage node modules ? they're git ignored for now

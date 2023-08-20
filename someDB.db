@@ -1,11 +1,28 @@
 {"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:37:57 GMT","_id":"13z6mnDvA5LC31Eu"}
+{"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 09:34:31 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"2VrWjfmS6zMpCgwP"}
+{"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 09:43:27 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"3Fq7WDnbf17QPfJ2"}
+{"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:56:59 GMT","quote_id":31,"quote":"The best revenge is massive success.","_id":"6HWElsQBZHVv4NaZ"}
+{"request_type":"GET/Dummy","response_date":"Sun, 20 Aug 2023 08:53:52 GMT","quote_id":74,"quote":"I would rather die of passion than of boredom.","_id":"BWF88Y4jaHQ5uqHu"}
+{"request_type":"GET/Dummy","response_date":"Sun, 20 Aug 2023 08:50:51 GMT","quote_id":92,"quote":"You may be disappointed if you fail, but you are doomed if you don’t try.","_id":"D2fRIdxTD022rNc2"}
+{"request_type":"AUTH","userFirstName":"Macy","userLastName":"Greenfelder","_id":"F2QoI1ykh1zo6Bwp"}
 {"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:39:58 GMT","_id":"H0zBZ9PlUgak6Sn7"}
+{"request_type":"GET/Dummy","quote_id":94,"quote":"Life is what we make it, always has been, always will be.","_id":"IFuGqnppyS9LRTF2"}
+{"request_type":"GET/Dummy","response_date":"Sun, 20 Aug 2023 08:49:50 GMT","quote_id":85,"quote":"You can’t use up creativity.  The more you use, the more you have.","_id":"Lw46voGdtipoh1NJ"}
+{"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 08:51:51 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"PfHWC1PLlJhzzgCT"}
+{"request_type":"GET/Dummy","quote_id":69,"quote":"A person who never made a mistake never tried anything new.","_id":"QvLvGmxKUcx1OvfT"}
+{"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:55:58 GMT","quote_id":62,"quote":"If you want to lift yourself up, lift up someone else.","_id":"WkJEvWTIY3mV1CPQ"}
+{"request_type":"GET/Dummy","quote_id":47,"quote":"When I was 5 years old, my mother always told me that happiness was the key to life.  When I went to school, they asked me what I wanted to be when I grew up.  I wrote down ‘happy’.  They told me I didn’t understand the assignment, and I told them they didn’t understand life.","_id":"XIgYSQF8aVPuUVoE"}
+{"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:54:58 GMT","quote_id":14,"quote":"Twenty years from now you will be more disappointed by the things that you didn’t do than by the ones you did do, so throw off the bowlines, sail away from safe harbor, catch the trade winds in your sails.  Explore, Dream, Discover.","_id":"YZ5rO2VRKE6gk3v9"}
+{"request_type":"GET/Dummy","quote_id":87,"quote":"Our lives begin to end the day we become silent about things that matter.","_id":"bbslz47VGKagvKC1"}
 {"request_type":"AUTH","userFirstName":"Macy","userLastName":"Greenfelder","_id":"bsEUZ8AKd8k5Y3Pw"}
+{"request_type":"AUTH","userFirstName":"Macy","userLastName":"Greenfelder","_id":"czjeKM9dRWCK8bB4"}
+{"request_type":"GET/Dummy","response_date":"Sun, 20 Aug 2023 08:48:50 GMT","quote_id":45,"quote":"Teach thy tongue to say, “I do not know,” and thous shalt progress.","_id":"dp7E4fFIpPtLyHWi"}
+{"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 09:05:53 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"e3nySoN2q4m8HdmU"}
+{"request_type":"GET/Dummy","response_date":"Sun, 20 Aug 2023 08:52:51 GMT","quote_id":37,"quote":"The only person you are destined to become is the person you decide to be.","_id":"eV94JbipsoK6J8Bf"}
+{"request_type":"GET/Dummy","response_date":"Sun, 20 Aug 2023 08:54:52 GMT","quote_id":3,"quote":"Strive not to be a success, but rather to be of value.","_id":"fmOoeoFX5DeMhxWl"}
+{"request_type":"GET/Dummy","quote_id":91,"quote":"It’s your place in the world; it’s your life. Go on and do all you can with it, and make it the life you want to live.","_id":"idtyM18rbeE7CBhu"}
 {"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:38:57 GMT","_id":"k5zpSARhGYlhoO01"}
 {"request_type":"AUTH","_id":"lgJ1LSvLlvj9o7yi"}
 {"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:41:41 GMT","_id":"mcOclgxVoo8KEqxL"}
-{"request_type":"AUTH","userFirstName":"Macy","userLastName":"Greenfelder","_id":"czjeKM9dRWCK8bB4"}
-{"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:54:58 GMT","quote_id":14,"quote":"Twenty years from now you will be more disappointed by the things that you didn’t do than by the ones you did do, so throw off the bowlines, sail away from safe harbor, catch the trade winds in your sails.  Explore, Dream, Discover.","_id":"YZ5rO2VRKE6gk3v9"}
-{"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:55:58 GMT","quote_id":62,"quote":"If you want to lift yourself up, lift up someone else.","_id":"WkJEvWTIY3mV1CPQ"}
-{"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:56:59 GMT","quote_id":31,"quote":"The best revenge is massive success.","_id":"6HWElsQBZHVv4NaZ"}
-{"request_type":"AUTH","userFirstName":"Macy","userLastName":"Greenfelder","_id":"F2QoI1ykh1zo6Bwp"}
+{"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 09:02:28 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"pLrfMwhnFgy14kgD"}
+{"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 08:47:49 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"poD8cqekLSK6rVrH"}

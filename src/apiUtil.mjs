@@ -40,3 +40,20 @@ export class MyAPI
 		}
 	};
 };
+
+export function handleApiResource(remainingResource, minThresold, requestType) {
+	console.log(`[RESOURCE HANDLING MSG] At request: ${requestType}, ` +
+	`remaining resource: ${remainingResource} ` + 
+	`for a minimum threshold of: ${minThresold}`)
+
+	if (parseInt(remainingResource) < minThresold) {
+		console.log(`
+		[RESOURCE HANDLING MSG] Can't perform any post-${requestType} request\n` + 
+		`- Not enough API resources to run the monitor\n` +
+		`- returning from mainSequence now\n` +
+		`- error will be escalated to stop calling callOrStopMainSequence\n` +
+		`- please check your REST API capability and retry.`);
+
+		return 'resource_nok';
+	}
+};

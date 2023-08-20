@@ -4,7 +4,7 @@ import { setIntervalAsync,
 import Datastore from "nedb";
 import 'dotenv/config'; //syntax according to dotenv doc
 import 'dotenv-expand/config';
-import { MyAPI } from "./apiUtil.mjs";
+import { MyAPI, handleApiResource } from "./apiUtil.mjs";
 import { enterCredentialsOrTimeoutAfter } from "./credUtil.mjs"
 
 //dotenv.config();
@@ -28,9 +28,9 @@ const DEBUG_TIMING = false; //for timing-related debug
 // API general settings
 const API_URL = process.env.API_URL;
 //const API_ENV = process.env.API_ENV;
-//const RESOURCE_KEY = process.env.RESOURCE_KEY;
-let API_RESOURCE = parseInt(process.env.API_RESOURCE);
+const RESOURCE_KEY = process.env.RESOURCE_KEY;
 const MIN_RESOURCE_THRESH = parseInt(process.env.MIN_RESOURCE_THRESH);
+let API_RESOURCE = parseInt(process.env.API_RESOURCE);
 // Request settings
 const LOGIN_ENDPOINT = process.env.LOGIN_ENDPOINT;
 //const EXTRA_LOGIN_FIELDS = JSON.parse(process.env.EXTRA_LOGIN_FIELDS);
@@ -53,7 +53,6 @@ const DT_FIRST_REQ = parseInt(process.env.DT_FIRST_REQ);
 const DT_DUMMY_REQ = parseInt(process.env.DT_DUMMY_REQ);
 const DT_AUTH_CYCLE = parseInt(process.env.DT_AUTH_CYCLE); 
 const DT_SESS_AFT_FIRST_RUN = parseInt(process.env.DT_MONITOR_SESS_AFT_FIRST_RUN);
-
 // ----------------------END OF MONITOR SETTINGS ---------------------------------
 
 // init un / pw globally (TODO other pattern)
@@ -98,30 +97,30 @@ async function mainSequence() {
 			throw new Error("invalid credentials - try again");
 		}
 		const loginResponseD = loginResponse.data;
+		const loginResponseH = loginResponse.headers;
 		api.token = loginResponseD[TOKEN_FIELD];
 
 		// ------------------- 2) LOGIN SUCCESSFUL => TOP ------------------------------
-		
 		const dtToken = Date.now();  // instant the token becomes available
 		const dtTokenReadable = new Date(dtToken);
 		
 		const nextExpiration = dtToken + DT_AUTH_CYCLE; // instant the token will expire
 		const nextExpirationReadable = new Date(nextExpiration);
 
-		console.log(`
-		Key from login: ${api.token} will be available ` 
+		console.log(`Key from login: ${api.token} will be available ` 
 		+ `from ${dtTokenReadable} to ${nextExpirationReadable},` +
 		` for the next ${DT_AUTH_CYCLE/(1000*60)} min.`);
 		
 		// For example: monitoring content in login headers (if any)
 		//const loginResponseH = loginResponse.headers;
-		console.log(`xxxxx mock login headers: ${loginResponse.headers}`);
-		console.log(`xxxxx mock login data: ${loginResponse.data}`);
+		console.log(`xxxxx mock login headers: ${loginResponseH}`);
+		//TODO fix console.log [object Object]
+		//console.log(`xxxxx mock login data: ${loginResponseD}`);
 
 		// DATA --> DATASTORE - random example of user data to record - replace with your own
 		const monitoredLoginData = {
 			'request_type' : 'AUTH',
-			'response_date' : loginResponse.headers.date,
+			'response_date' : loginResponseH.date,
 			'userFirstName' : loginResponseD[FIELD1_TO_MONITOR_AT_LOGIN],
 			'userLastName' : loginResponseD[FIELD2_TO_MONITOR_AT_LOGIN]
 		};
@@ -129,23 +128,15 @@ async function mainSequence() {
 		
 		// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// If not enough resources, return to avoid 429 too many requests
-		// No API resource to check in the mock!
-		// API_RESOURCE = monitoredLoginData['resource_to_monitor'];
-
-		if (DEBUG_RESOURCE) console.log(`LATEST RESOURCE - LOG AT LOGIN REQ: ${API_RESOURCE}`);
-		if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
-			console.log(`
-			Can't perform any post-login request ` + 
-			`- Not enough API resources to run the monitor ` +
-			`- returning from outerloop (try loop) now ` +
-			`- error will be thrown when next calling callOrStopMainSequence. ` +
-			`- please check your REST API capability and retry.`);
-			return false; 
-		}
+		API_RESOURCE = loginResponseH[RESOURCE_KEY]; //API_RESOURCE = 4 to do in unit tests;
+		API_RESOURCE = 4;
+		let resourceHandled = handleApiResource(API_RESOURCE, 
+			MIN_RESOURCE_THRESH, 
+			monitoredLoginData['request_type']);
+		if (resourceHandled === 'resource_nok') return resourceHandled;
 
 		// ------------------------- 3) NON-LOGIN REQUEST (E.G: GET) --------------------------------
-		console.log(`
-		Post authentication, waiting ${DT_FIRST_REQ/(1000*60)}` +
+		console.log(`Post authentication, waiting ${DT_FIRST_REQ/(1000*60)}` +
 		` min initially before triggering 1st dummy request...`); 
 		await sleep(DT_FIRST_REQ); // 1. wait dtFirstReq ms
 		
@@ -164,15 +155,18 @@ async function mainSequence() {
 				dummyReqHeaders,
 				DUMMY_REQUEST_TIMEOUT);
 			const dummyResponseD = dummyResponse.data;
+			const dummyResponseH = dummyResponse.headers;
 
 			// if performRequest did not resolve, .headers will break, hence the if
 			if (dummyResponse) {
-				console.log(`xxxxx mock dummy request headers: ${dummyResponse.headers}`);
-				console.log(`xxxxx mock dummy request data: ${dummyResponse.data}`);
+				console.log(`xxxxx mock dummy request headers: ${dummyResponseH}`);
+				//TODO fix console.log [object Object]
+				//console.log(`xxxxx mock dummy request data: ${dummyResponseD}`);
+				
 				// DATA --> DATASTORE - random example of data to record - replace with your own
 				const monitoredDummyData = {
 					'request_type' : 'GET/Dummy',
-					'response_date': dummyResponse.headers.date,
+					'response_date': dummyResponseH.data,
 					'quote_id' : dummyResponseD[FIELD1_TO_MONITOR],
 					'quote' : dummyResponseD[FIELD2_TO_MONITOR]
 				};
@@ -181,32 +175,25 @@ async function mainSequence() {
 
 				// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 				// If not enough resources, break to avoid 429 too many requests
-				//API_RESOURCE = monitoredDummyData['resource_to_monitor'];
-
-				if (DEBUG_RESOURCE) console.log(`LATEST RESOURCE - LOG AT NON-LOGIN REQ: ${API_RESOURCE}`);
-				if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
-					console.log(`
-					Can't perform any more (non-login) dummy requests ` + 
-					`- Not enough API resources to run the monitor ` +
-					`- returning from innerloop (while loop) now ` +
-					`- error will be thrown when next calling callOrStopMainSequence. ` +
-					`- please check your REST API capability and retry.`);
-					return false; 
-				}
+				API_RESOURCE = dummyResponseH[RESOURCE_KEY];
+				let resourceHandled = handleApiResource(API_RESOURCE, 
+					MIN_RESOURCE_THRESH, 
+					monitoredDummyData['request_type']);
+				if (resourceHandled === 'resource_nok') return resourceHandled;
 			}
 			// Wait *DT_DUMMY_REQ* ms before next Non-Login Request
 			await sleep(DT_DUMMY_REQ);
-			// reassess `tsWhile` to keep running or stop while loop
-			tsWhile = Date.now();
-			if (DEBUG_TIMING) {
-				console.log(`tsWhile value end of loop: ${tsWhile}`);
-			}
+			
+			tsWhile = Date.now(); // reassess `tsWhile` to keep running / stop
+			if (DEBUG_TIMING) console.log(`tsWhile value end of loop: ${tsWhile}`);
+
 		}
+
 		// when a cycle: (auth + [req,...,req]) has completed, msg gets returned
 		// msg is awaited at 1st mainSequence iteration
 		// its reception conditions 2nd mainSequence execution
-		// (see main function below)
 		const msg = 'completed_mainSeq_report';
+		
 		return msg;
 
 	} catch (err) {
@@ -223,14 +210,15 @@ async function mainSequence() {
 
 async function callOrStopMainSequence() {
 	if (parseInt(API_RESOURCE) < MIN_RESOURCE_THRESH) {
-		throw new Error(`
-		!!!! Can't run mainSequence anymore due to `+
+		throw new Error(`[MAIN SEQ GO/NO GO MSG] !!!! `
+		`Can't run mainSequence anymore due to `+
 		`not enough API resources available `+`
 		- please check your REST API capability and retry later.`);
 	} else {
-		console.log(`
+		console.log(`[MAIN SEQ GO/NO GO MSG]\n
 		-------------------------- STARTING A MAIN SEQUENCE RUN `+
 		`------------------------------------`);
+		
 		return await mainSequence();
 	}
 };
@@ -246,43 +234,42 @@ async function callOrStopMainSequence() {
 	// due to using up some of the cycle time for user manual input
 	// so we don't, and do it at 2nd run instead.
 
-	// Conditional 2nd run
-	// CASE A: returned from 1st call with msg ---------------------------------------
-	// > OK to proceed to automated monitoring + termination
-	// > No more manual intervention needed!
+	// CASE A: returned from 1st call with success msg
+	// => OK to proceed to running the monitoring sequence in loop
 	if (firstExecResult === 'completed_mainSeq_report') {
 		console.log(`
-		Successfully returned from very 1st mainSequence call: ` + `
+		[MAIN EXEC MSG] Successfully returned from very 1st mainSequence call: ` + `
 		(msg received: ${firstExecResult}) running 2nd mainSequence now...`);
 		
 		let myIntervalAsync = setIntervalAsync(callOrStopMainSequence, DT_AUTH_CYCLE);
 		callOrStopMainSequence(); //called in sync with myIntervalAsync
 		
 		// Timeout past *DT_MONITOR_SESS_AFT_FIRST_RUN*
-		// `clearIntervalAsync` terminates the process (clean!).
+		// `clearIntervalAsync` terminates the process (clean!)
 		setTimeout ( _ => {
-			console.log(`xxxxxxxxxxxxxxxx `+ 
-			`Monitor session timing out now ` +
-			`- clearing myIntervalAsync after last execution cycle ` + 
-			`is complete. xxxxxxxxxxxxxxx`);
+			console.log(`[MAIN EXEC MSG] `+ 
+			`Monitor session timing out now\n` +
+			`- clearing myIntervalAsync after last execution cycle` + 
+			`is complete.`);
 			clearIntervalAsync(myIntervalAsync);
 		}, DT_SESS_AFT_FIRST_RUN);
 	
 
-	// CASE B: returned from 1st call... but without false bool or string ---------
-	// then the error is not linked to a lack of API resource.
-	} else if (firstExecResult && firstExecResult !== 'completed_mainSeq_report') {
-		throw new Error(`
-		!!!! Couldn't received completion message ` + 
+	// CASE B: returned from 1st call without success or known error cause
+	// => the error is not related to a lack of API resource.
+	} else if (firstExecResult !== 'resource_nok' 
+	&& firstExecResult !== 'completed_mainSeq_report') {
+		throw new Error(`[MAIN EXEC MSG] !!!! ` + 
+		`Couldn't received completion message ` + 
 		`from mainSequence - not due to lack of API resource. ` + 
 		`Maybe check for syntax / main execution logics error?`);
 	
-	
-	// CASE C: error due to lack of API resource -----------------------------------
+	// CASE C: error due to lack of API resource
 	} else {
-		throw new Error(`!!!! Couldn't loop callOrStopMainSequence `+
-		`not enough API resources available `+`
-		- please check your REST API capability and retry later.`);
+		throw new Error(`[MAIN EXEC MSG] !!!! ` + 
+		`Couldn't loop callOrStopMainSequence\n`+
+		`- not enough API resources available\n` +
+		`- please check your REST API capability and retry later.`);
 	}
 })();
 // --------------------------------- END OF MONITOR EXECUTION CODE --------------------------------------

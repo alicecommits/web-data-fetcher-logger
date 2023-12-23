@@ -1,0 +1,3 @@
+[submodule "http-client-utils"]
+	path = http-client-utils
+	url = https://github.com/alicecommits/http-client-utils.git

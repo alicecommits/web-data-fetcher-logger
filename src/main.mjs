@@ -4,7 +4,7 @@ import { setIntervalAsync,
 import Datastore from "nedb";
 import 'dotenv/config'; //syntax according to dotenv doc
 import 'dotenv-expand/config';
-import { MyAPI, handleApiResource } from "./apiUtil.mjs";
+import { MyAPI, handleApiResource } from "../http-client-utils/apiUtil.mjs";
 import { enterCredentialsOrTimeoutAfter } from "./credUtil.mjs"
 
 //dotenv.config();
@@ -128,8 +128,9 @@ async function mainSequence() {
 		
 		// !!!!!!!!!!!!!!!!!!!!  API resource handling !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// If not enough resources, return to avoid 429 too many requests
-		API_RESOURCE = loginResponseH[RESOURCE_KEY]; //API_RESOURCE = 4 to do in unit tests;
-		API_RESOURCE = 4;
+		// dummyJSON API starts at a limit of 120 calls,
+		// so e.g. MIN-RESOURCE_THRESH set at 5 calls
+		API_RESOURCE = loginResponseH[RESOURCE_KEY];
 		let resourceHandled = handleApiResource(API_RESOURCE, 
 			MIN_RESOURCE_THRESH, 
 			monitoredLoginData['request_type']);

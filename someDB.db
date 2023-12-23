@@ -26,3 +26,7 @@
 {"request_type":"GET/Dummy","response_date":"Sat, 19 Aug 2023 19:41:41 GMT","_id":"mcOclgxVoo8KEqxL"}
 {"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 09:02:28 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"pLrfMwhnFgy14kgD"}
 {"request_type":"AUTH","response_date":"Sun, 20 Aug 2023 08:47:49 GMT","userFirstName":"Macy","userLastName":"Greenfelder","_id":"poD8cqekLSK6rVrH"}
+{"request_type":"AUTH","response_date":"Sat, 23 Dec 2023 13:53:18 GMT","userFirstName":"Jeanne","userLastName":"Halvorson","_id":"E16M7KQ4S4qgq94v"}
+{"request_type":"GET/Dummy","quote_id":22,"quote":"Winning isn’t everything, but wanting to win is.","_id":"okQkXI3rXmOHh1H1"}
+{"request_type":"GET/Dummy","quote_id":86,"quote":"Dream big and dare to fail.","_id":"eElFQFWGnkWtrnrx"}
+{"request_type":"GET/Dummy","quote_id":64,"quote":"Limitations live only in our minds.  But if we use our imaginations, our possibilities become limitless.","_id":"hLQioSlnGjQplQtH"}

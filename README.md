@@ -1,4 +1,4 @@
-# **Alice's REST API monitor**
+# **Web data fetcher (via REST)**
 ## **Outline**
 customizable monitor to track the activity of a REST API
 - requiring periodical (re-)authentication, using an API key - *this part can be adjusted or removed, depending on your API requiring (or not) authentication*

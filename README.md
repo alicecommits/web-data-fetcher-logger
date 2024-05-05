@@ -1,7 +1,7 @@
-# **Web data fetcher (via REST)**
+# **Web data fetcher (via REST) and logger**
 ## **Outline**
-customizable monitor to track the activity of a REST API
-- requiring periodical (re-)authentication, using an API key - *this part can be adjusted or removed, depending on your API requiring (or not) authentication*
+customizable monitor to track the evolution of some data, via hitting a REST API. The following might be required:
+- periodical (re-)authentication, using an API key - *this part can be adjusted or removed, depending on your API requiring (or not) authentication*
 - logging the content of response status/data/headers, at **repeated regular time intervals**!
 
 - to read about active TODOs --> [here](#todos)

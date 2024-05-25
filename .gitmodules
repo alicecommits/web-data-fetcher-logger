@@ -1,0 +1,3 @@
+[submodule "web-utils"]
+	path = web-utils
+	url = https://github.com/alicecommits/web-utils.git

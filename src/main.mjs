@@ -4,7 +4,7 @@ import { setIntervalAsync,
 import Datastore from "nedb";
 import 'dotenv/config'; //syntax according to dotenv doc
 import 'dotenv-expand/config';
-import { MyAPI, handleApiResource } from "../http-client-utils/apiUtil.mjs";
+import { MyAPI, handleApiResource } from "../web-utils/src/http-utils/MyApiAxiosWrapper.mjs"
 import { enterCredentialsOrTimeoutAfter } from "./credUtil.mjs"
 
 //dotenv.config();
